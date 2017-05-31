@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Title</title>
+    <meta charset="utf-8">
+    <style>
+      @import url(https://fonts.googleapis.com/css?family=Yanone+Kaffeesatz);
+      @import url(https://fonts.googleapis.com/css?family=Droid+Serif:400,700,400italic);
+      @import url(https://fonts.googleapis.com/css?family=Ubuntu+Mono:400,700,400italic);
+
+      body { font-family: 'Droid Serif'; }
+      h1, h2, h3 {
+        font-family: 'Yanone Kaffeesatz';
+        font-weight: normal;
+      }
+      .remark-code, .remark-inline-code { font-family: 'Ubuntu Mono'; }
+    </style>
+  </head>
+  <body>
+    <textarea id="source">
+
+class: center, middle
+
+# From Dockerfiles to Ansible Container
+## Tomas Tomecek
+
+* TODO
+  * theme
+
+---
+
+/me
+
+ * Tomáš Tomeček
+ * Red Hat
+ * ~~Ops~~ engineer
+ * Hacker, developer, tinker, speaker, teacher
+ * Containerization team tech lead
+ * Contributing to *
+
+???
+
+* Ask who is Ops; initiate applause
+
+---
+
+# Agenda
+
+1. Dockerfile/docker-compose project
+2. Transition
+3. ansible-container project
+4. Container-enabled Ansible roles
+5. Bright future
+
+---
+
+# Requirements
+## for development setup and deployment
+
+* Easy to set up
+  * With a single command
+* Consistent environment
+  * Containers
+  * The deployment
+  * Tests
+* Easy to debug
+
+---
+
+# Dockerfile/docker-compose project
+## pros
+
+* Wide usage
+* Satisfies requirements
+* TBD
+
+---
+
+# Dockerfile/docker-compose project
+## cons
+
+* Composefile is not powerful
+  * Can't run commands easily in containers (e.g. database migration)
+  * Can't have dev/prod specific deployments
+* Docker Hub images are outdated and lack documentation
+* Shell scripts, blah
+
+---
+
+# Transition
+
+* Good
+  * Ansible!!
+  * TBD
+* Bad
+  * shell -> Ansible
+
+---
+
+# ansible-container project
+## pros
+
+---
+
+# ansible-container project
+## cons
+
+---
+
+# Container-enabled Ansible roles
+
+* TBD introduction
+* TBD example
+
+---
+
+# Demo
+
+* TBD
+
+---
+
+# Bright future
+
+* TBD
+
+---
+
+# Thank you!
+## Questions?
+
+    </textarea>
+    <script src="remark-latest.min.js">
+    </script>
+    <script>
+      var slideshow = remark.create();
+    </script>
+  </body>
+</html>
