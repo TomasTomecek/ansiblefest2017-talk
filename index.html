@@ -1,18 +1,22 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Title</title>
+    <title>From Dockerfiles to Ansible Container</title>
     <meta charset="utf-8">
     <style>
       @import url(https://fonts.googleapis.com/css?family=Yanone+Kaffeesatz);
       @import url(https://fonts.googleapis.com/css?family=Droid+Serif:400,700,400italic);
       @import url(https://fonts.googleapis.com/css?family=Ubuntu+Mono:400,700,400italic);
 
-      body { font-family: 'Droid Serif'; }
+      /* body.remark-container .remark-slide-content {
+        font-family: 'Droid Serif';
+        font-size: 26px;
+      }
       h1, h2, h3 {
+        font-size: 32px;
         font-family: 'Yanone Kaffeesatz';
         font-weight: normal;
-      }
+      } */
       .remark-code, .remark-inline-code { font-family: 'Ubuntu Mono'; }
     </style>
   </head>
@@ -24,19 +28,31 @@ class: center, middle
 # From Dockerfiles to Ansible Container
 ## Tomas Tomecek
 
-* TODO
-  * theme
-
 ---
 
-/me
+# /me
 
  * Tomáš Tomeček
- * Red Hat
- * ~~Ops~~ engineer
+
+--
+
  * Hacker, developer, tinker, speaker, teacher
- * Containerization team tech lead
+
+--
+
  * Contributing to *
+
+--
+
+ * ~~Ops~~ engineer
+
+--
+
+ * Red Hat
+
+--
+
+ * Containerization team tech lead
 
 ???
 
@@ -55,35 +71,134 @@ class: center, middle
 ---
 
 # Requirements
-## for development setup and deployment
+## For development setup and deployment
 
 * Easy to set up
+
   * With a single command
-* Consistent environment
+
+--
+
+* Consistent environment for every developer
+
   * Containers
   * The deployment
   * Tests
-* Easy to debug
+
+--
+
+* Development and production environment.
+
+  * Developers want to iterate quickly.
+  * Production environment needs to be rock-solid.
+
+???
+
+* Everyone is running the same version of webserver, database, compiler
+* We also want to run run tests in a container
 
 ---
 
 # Dockerfile/docker-compose project
-## pros
+## Description
 
-* Wide usage
-* Satisfies requirements
-* TBD
+* Dockerfile (= custom image) for our application.
+
+--
+
+* Service images from Docker Hub
+
+--
+
+* Deployment done with Compose file
+  * Handcrafted
+
+--
+
+* Examples
+  ```bash
+  $ docker-compose build
+  $ docker-compose up
+  ```
 
 ---
 
 # Dockerfile/docker-compose project
-## cons
+## Pros
 
-* Composefile is not powerful
-  * Can't run commands easily in containers (e.g. database migration)
-  * Can't have dev/prod specific deployments
-* Docker Hub images are outdated and lack documentation
-* Shell scripts, blah
+* Wide usage.
+
+* Satisfies (some) requirements.
+
+* Docker Hub contains tons of images.
+
+* Actively developed.
+
+---
+
+# Dockerfile/docker-compose project
+## Cons
+
+* Compose file is not powerful:
+
+  * Can't run commands easily in containers (e.g. database migration).
+
+  * Can't have dev/prod specific deployments within a single definition file.
+
+  * Service readiness checks are clunky.
+
+--
+
+* Dockerfile and Compose file are specific to Docker ecosystem.
+
+--
+
+* Some Docker Hub images are outdated and lack documentation.
+
+  * Official vs. community.
+
+--
+
+* Shell scripts, blah.
+
+???
+
+* `sleep` or poll
+* can't provision vm, or a rkt container -- locked in to docker platform
+* Start database migration after the database is up and accepting connections.
+* These pros and cons might be subjective.
+
+---
+
+# Shell script example
+
+--
+
+```bash
+RUN set -eux; \
+	\
+# this "case" statement is generated via "update.sh"
+	%%ARCH-CASE%%; \
+	\
+	url="https://golang.org/dl/go${GOLANG_VERSION}.${goRelArch}.tar.gz"; \
+	wget -O go.tgz "$url"; \
+	echo "${goRelSha256} *go.tgz" | sha256sum -c -; \
+	tar -C /usr/local -xzf go.tgz; \
+	rm go.tgz; \
+	\
+	if [ "$goRelArch" = 'src' ]; then \
+		echo >&2; \
+		echo >&2 'error: UNIMPLEMENTED'; \
+		echo >&2 'TODO install golang-any from jessie-backports for GOROOT_BOOTSTRAP (and uninstall after build)'; \
+		echo >&2; \
+		exit 1; \
+	fi; \
+	\
+	export PATH="/usr/local/go/bin:$PATH"; \
+	go version
+```
+
+Source: https://github.com/docker-library/golang/blob/master/Dockerfile-debian.template#L14
 
 ---
 
@@ -91,24 +206,55 @@ class: center, middle
 
 * Good
   * Ansible!!
+  * We have full Ansible power
   * TBD
 * Bad
-  * shell -> Ansible
+  * shell -> Ansible (might not be as bad)
+  * some Ansible tasks are more complex (TODO: COPY vs copy)
 
 ---
 
 # ansible-container project
+## Workflow
+
+1. `init`
+2. `install`
+3. `build`
+4. `run`
+5. `push`
+6. `deploy`
+
+---
+
+
+# ansible-container project
 ## pros
+
+* Utilize Ansible-Container-ready roles from Ansible Galaxy
+  * Not just images, deployable units!
+* Support complete lifecycle of the application.
+* Use Ansible, the universal markup, to create images.
+
 
 ---
 
 # ansible-container project
 ## cons
 
+* Not mature yet
+
+
 ---
 
 # Container-enabled Ansible roles
 
+* Define how the Ansible role is meant to be used in container environment
+
+--
+
+* https://github.com/chouseknecht/django-gulp-nginx/blob/master/container.yml
+  * Orchestration metadata
+  * Configuration for ansible-container
 * TBD introduction
 * TBD example
 
@@ -133,7 +279,10 @@ class: center, middle
     <script src="remark-latest.min.js">
     </script>
     <script>
-      var slideshow = remark.create();
+      var slideshow = remark.create({
+        ratio: '16:9',
+        highlightLines: true
+      });
     </script>
   </body>
 </html>
