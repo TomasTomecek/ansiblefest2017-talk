@@ -130,6 +130,70 @@ class: center, middle
 
 ---
 
+# sample Dockerfile
+
+```dockerfile
+FROM fedora:25
+RUN dnf install -y git python-pip gcc python-devel postgresql-devel redhat-rpm-config python2-pytest npm && \
+    npm install -g bower
+
+ARG USER_ID=1000
+RUN useradd -o -u ${USER_ID} django && \
+    mkdir -p /opt/app && \
+    chown django:django /opt/app
+USER django
+
+WORKDIR /opt/app
+COPY ./requirements.txt /opt/app/
+RUN pip install --user -r ./requirements.txt
+COPY ./requirements-devel.txt /opt/app/
+RUN  pip install --user -r ./requirements-devel.txt
+
+COPY ./install_static_data.sh /opt/app
+COPY ./bower.json /opt/app
+RUN ./install_static_data.sh
+
+# the actual sources will be replaced by bind mount in development
+COPY . /opt/app/
+USER root
+RUN chown -R django:django .
+USER django
+
+# database needs to be set up before web can start serving requests
+CMD sleep 7 && exec python /opt/app/manage.py runserver -v3 0.0.0.0:8000
+```
+
+---
+
+# sample Compose file
+
+```yaml
+web:
+  build:
+    dockerfile: Dockerfile
+    context: .
+  ports:
+   - "8000:8000"
+  links:
+   - db
+  tty: true
+  environment:
+   - POSTGRESQL_DATABASE=django
+   - POSTGRESQL_USER=user
+   - POSTGRESQL_PASSWORD=password
+   - API_KEY
+db:
+  image: registry.access.redhat.com/rhscl/postgresql-95-rhel7
+  volumes:
+    - ./db:/var/lib/pgsql/data
+  environment:
+   - POSTGRESQL_DATABASE=django
+   - POSTGRESQL_USER=user
+   - POSTGRESQL_PASSWORD=password
+```
+
+---
+
 # Dockerfile/docker-compose project
 ## Pros
 
@@ -154,6 +218,8 @@ class: center, middle
 
   * Service readiness checks are clunky.
 
+  * No variables.
+
 --
 
 * Dockerfile and Compose file are specific to Docker ecosystem.
@@ -173,6 +239,7 @@ class: center, middle
 * `sleep` or poll
 * can't provision vm, or a rkt container -- locked in to docker platform
 * Start database migration after the database is up and accepting connections.
+* Content: is it secure? What's inside?
 * These pros and cons might be subjective.
 
 ---
@@ -212,12 +279,54 @@ Source: https://github.com/docker-library/golang/blob/master/Dockerfile-debian.t
 # Transition
 
 * Good
-  * Ansible!!
-  * We have full Ansible power
-  * TBD
+
+  * We have full Ansible power.
+
+  * We can utilize our Ansible roles.
+
 * Bad
-  * shell -> Ansible (might not be as bad)
-  * some Ansible tasks are more complex (TODO: COPY vs copy)
+
+  * shell → Ansible (might not be as bad)
+
+  * You may need to learn a lot.
+
+  * Some Ansible tasks are more complex.
+
+---
+
+# COPY vs copy module
+
+```dockerfile
+COPY file /path/inside/image
+```
+
+vs.
+
+```yaml
+ - name: Install file
+   copy:
+     src: file
+     dest: /path/inside/image
+```
+
+---
+# COPY vs copy module
+
+```dockerfile
+COPY file /path/inside/image
+RUN chmod 0644 /path/inside/image && chown app /path/inside/image
+```
+
+vs.
+
+```yaml
+ - name: Install file
+   copy:
+     src: file
+     dest: /path/inside/image
+     owner: app
+     mode: 0644
+```
 
 ---
 
@@ -265,21 +374,61 @@ Source: https://github.com/docker-library/golang/blob/master/Dockerfile-debian.t
 
 # Container-enabled Ansible roles
 
-* Define how the Ansible role is meant to be used in container environment
+* Define how the Ansible role is meant to be used in container environment.
 
 --
 
 * https://github.com/chouseknecht/django-gulp-nginx/blob/master/container.yml
   * Orchestration metadata
   * Configuration for ansible-container
-* TBD introduction
-* TBD example
 
 ---
 
-# Demo
+# container.yml
 
-* TBD
+```yaml
+defaults:
+  POSTGRES_USER: django
+  POSTGRES_PASSWORD: sesame
+  POSTGRES_DB: django
+  DJANGO_ROOT: /django
+  DJANGO_USER: django
+  DJANGO_PORT: 8080
+  DJANGO_VENV: /venv
+  NODE_USER: node
+  NODE_HOME: /node
+  NODE_ROOT: ''
+  GULP_DEV_PORT: 8080
+```
+
+---
+
+# container.yml
+
+```yaml
+services:
+  django:
+    from: 'centos:7'
+    roles:
+    - role: django-gunicorn
+    environment:
+      DATABASE_URL: 'pgsql://{{ POSTGRES_USER }}:{{ POSTGRES_PASSWORD }}@postgresql:5432/{{ POSTGRES_DB }}'
+      DJANGO_ROOT: '{{ DJANGO_ROOT }}'
+      DJANGO_VENV: '{{ DJANGO_VENV }}'
+    expose:
+    - '{{ DJANGO_PORT }}'
+    working_dir: '{{ DJANGO_ROOT }}'
+    links:
+    - postgresql
+    user: '{{ DJANGO_USER }}'
+    command: ['/usr/bin/dumb-init', '{{ DJANGO_VENV }}/bin/gunicorn', -w, '2', -b, '0.0.0.0:{{ DJANGO_PORT }}', 'project.wsgi:application']
+    entrypoint: [/usr/bin/entrypoint.sh]
+    dev_overrides:
+      volumes:
+      - '$PWD:{{ DJANGO_ROOT }}'
+      command: [/usr/bin/dumb-init, '{{ DJANGO_VENV }}/bin/python', manage.py, runserver, '0.0.0.0:{{ DJANGO_PORT }}']
+      depends_on:
+```
 
 ---
 
