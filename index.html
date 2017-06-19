@@ -42,20 +42,19 @@ class: center, middle
 ---
 
 # /me
-
- * Tomáš Tomeček
-
---
-
- * Hacker, developer, tinker, speaker, teacher
+## Tomáš Tomeček
 
 --
 
- * Contributing to *
+ * hacker, developer, tinker, speaker, teacher
 
 --
 
- * ~~Ops~~ engineer
+ * contributing to *
+
+--
+
+ * ~~ops~~ engineer
 
 --
 
@@ -63,38 +62,38 @@ class: center, middle
 
 --
 
- * Containerization team tech lead
+ * containerization team tech lead
 
 ???
 
-* Ask who is Ops; initiate applause
+* Ask who is dev and ops; initiate applause for ops.
 
 ---
 
 # Agenda
 
-1. Dockerfile/docker-compose project
+1. Dockerfile/docker-compose project.
 
-2. Transition
+2. Transition.
 
-3. ansible-container project
+3. Ansible Container project.
 
-4. Container-enabled Ansible roles
+4. Container-enabled Ansible roles.
 
-5. Bright future
+5. Bright future.
 
 ---
 
 # Requirements
 ## For development setup and deployment
 
-* Easy to set up
+* Easy to set up.
 
-  * With a single command
+  * With a single command.
 
 --
 
-* Consistent environment for every developer
+* Consistent environment for every developer.
 
   * Containers
 
@@ -104,13 +103,13 @@ class: center, middle
 
 ???
 
-* Everyone is running the same version of webserver, database, compiler
-* We also want to run run tests in a container
+* Everyone is running the same version of webserver, database, compiler.
+* We also want to run run tests in a container.
 
 ---
 
-# Requirements (cont.)
-## For development setup and deployment
+# Requirements
+## For development setup and deployment (cont.)
 
 * Development and production environment.
 
@@ -123,15 +122,15 @@ class: center, middle
 # Dockerfile/docker-compose project
 ## Description
 
-* Dockerfile (= custom image) for our application.
+* Dockerfile (= custom image) for your application.
 
 --
 
-* Service images from Docker Hub
+* Service images from Docker Hub.
 
 --
 
-* Deployment done with Compose file
+* Deployment done with Compose file.
   * Handcrafted
 
 ---
@@ -154,7 +153,7 @@ class: center, middle
 ---
 
 # Dockerfile/docker-compose project
-## sample Dockerfile
+## Sample Dockerfile
 
 ```dockerfile
 FROM fedora:25
@@ -172,7 +171,7 @@ USER django
 ---
 
 # Dockerfile/docker-compose project
-## sample Dockerfile (cont.)
+## Sample Dockerfile (cont.)
 
 ```dockerfile
 WORKDIR /opt/app
@@ -189,7 +188,7 @@ RUN ./install_static_data.sh
 ---
 
 # Dockerfile/docker-compose project
-## sample Dockerfile (cont.)
+## Sample Dockerfile (cont.)
 
 ```dockerfile
 COPY . /opt/app/
@@ -203,7 +202,7 @@ CMD sleep 7 && exec python /opt/app/manage.py runserver -v3 0.0.0.0:8000
 
 ---
 
-# sample Compose file
+# Sample Compose file
 
 ```yaml
 web:
@@ -339,9 +338,9 @@ Source: https://github.com/docker-library/golang/blob/master/Dockerfile-debian.t
 
 * Good
 
-  * We have full Ansible power.
+  * Full Ansible power.
 
-  * We can utilize our Ansible roles.
+  * You can utilize your Ansible roles.
 
 * Bad
 
@@ -389,7 +388,7 @@ vs.
 
 ---
 
-# ansible-container project
+# Ansible Container project
 ## Workflow
 
 1. `init`
@@ -407,10 +406,10 @@ vs.
 ---
 
 
-# ansible-container project
-## pros
+# Ansible Container project
+## Pros
 
-* Utilize Ansible-Container-ready roles from Ansible Galaxy
+* Utilize Ansible Container-ready roles from Ansible Galaxy.
 
   * Not just images, deployable units!
 
@@ -423,10 +422,10 @@ vs.
 
 ---
 
-# ansible-container project
-## cons
+# Ansible Container project
+## Cons
 
-* Not mature yet
+* Not mature yet.
 
 
 ---
@@ -438,7 +437,9 @@ vs.
 --
 
 * https://github.com/chouseknecht/django-gulp-nginx/blob/master/container.yml
+
   * Orchestration metadata
+
   * Configuration for ansible-container
 
 ---
@@ -462,7 +463,7 @@ defaults:
 
 ---
 
-# container.yml
+# container.yml (cont.)
 
 ```yaml
 services:
@@ -486,14 +487,24 @@ services:
 
 ---
 
-# container.yml (cont.)
+# container.yml
+## Development overrides
 
 ```yaml
+  django:
     dev_overrides:
       volumes:
       - '$PWD:{{ DJANGO_ROOT }}'
       command: [/usr/bin/dumb-init, '{{ DJANGO_VENV }}/bin/python', manage.py, runserver, '0.0.0.0:{{ DJANGO_PORT }}']
       depends_on:
+      - postgresql
+```
+
+```yaml
+  nginx:
+    dev_overrides:
+      ports: []
+      command: /bin/false
 ```
 
 ---
@@ -507,7 +518,9 @@ services:
 # Thank you!
 
 * <span class="fa fa-github-square"></span> [ansible/ansible-container](https://github.com/ansible/ansible-container)
+
 * `#ansible-container` channel on [irc.freenode.net](https://freenode.net/)
+
 * [https://groups.google.com/forum/#!forum/ansible-container](https://groups.google.com/forum/#!forum/ansible-container)
 
     </textarea>
