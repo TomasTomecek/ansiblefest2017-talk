@@ -102,18 +102,21 @@ class: center, middle
 
   * Tests
 
---
+???
+
+* Everyone is running the same version of webserver, database, compiler
+* We also want to run run tests in a container
+
+---
+
+# Requirements (cont.)
+## For development setup and deployment
 
 * Development and production environment.
 
   * Developers want to iterate quickly.
 
   * Production environment needs to be rock-solid.
-
-???
-
-* Everyone is running the same version of webserver, database, compiler
-* We also want to run run tests in a container
 
 ---
 
@@ -131,21 +134,32 @@ class: center, middle
 * Deployment done with Compose file
   * Handcrafted
 
---
+---
 
-* Examples
+# Dockerfile/docker-compose project
+## Examples
+
+* Building the project:
+
   ```bash
   $ docker-compose build
+  ```
+
+* Running the project:
+
+  ```bash
   $ docker-compose up
   ```
 
 ---
 
-# sample Dockerfile
+# Dockerfile/docker-compose project
+## sample Dockerfile
 
 ```dockerfile
 FROM fedora:25
-RUN dnf install -y git python-pip gcc python-devel postgresql-devel redhat-rpm-config python2-pytest npm && \
+RUN dnf install -y git python-pip gcc python-devel \
+    postgresql-devel redhat-rpm-config python2-pytest npm && \
     npm install -g bower
 
 ARG USER_ID=1000
@@ -153,7 +167,14 @@ RUN useradd -o -u ${USER_ID} django && \
     mkdir -p /opt/app && \
     chown django:django /opt/app
 USER django
+```
 
+---
+
+# Dockerfile/docker-compose project
+## sample Dockerfile (cont.)
+
+```dockerfile
 WORKDIR /opt/app
 COPY ./requirements.txt /opt/app/
 RUN pip install --user -r ./requirements.txt
@@ -163,8 +184,14 @@ RUN  pip install --user -r ./requirements-devel.txt
 COPY ./install_static_data.sh /opt/app
 COPY ./bower.json /opt/app
 RUN ./install_static_data.sh
+```
 
-# the actual sources will be replaced by bind mount in development
+---
+
+# Dockerfile/docker-compose project
+## sample Dockerfile (cont.)
+
+```dockerfile
 COPY . /opt/app/
 USER root
 RUN chown -R django:django .
@@ -193,6 +220,13 @@ web:
    - POSTGRESQL_USER=user
    - POSTGRESQL_PASSWORD=password
    - API_KEY
+```
+
+---
+
+# sample Compose file (cont.)
+
+```yaml
 db:
   image: registry.access.redhat.com/rhscl/postgresql-95-rhel7
   volumes:
@@ -235,7 +269,17 @@ db:
 
 * Dockerfile and Compose file are specific to Docker ecosystem.
 
---
+???
+
+* Start database migration after the database is up and accepting connections.
+* `sleep` or poll
+* can't provision vm, or a rkt container -- locked in to docker platform
+* dockerfiles are full of hacks and are not trivial to master
+
+---
+
+# Dockerfile/docker-compose project
+## Cons (cont.)
 
 * Some Docker Hub images are outdated and lack documentation.
 
@@ -247,9 +291,6 @@ db:
 
 ???
 
-* `sleep` or poll
-* can't provision vm, or a rkt container -- locked in to docker platform
-* Start database migration after the database is up and accepting connections.
 * Content: is it secure? What's inside?
 * These pros and cons might be subjective.
 
@@ -278,6 +319,13 @@ RUN set -eux; \
 		echo >&2; \
 		exit 1; \
 	fi; \
+```
+
+---
+
+# Shell script example (cont.)
+
+```bash
 	\
 	export PATH="/usr/local/go/bin:$PATH"; \
 	go version
@@ -299,7 +347,7 @@ Source: https://github.com/docker-library/golang/blob/master/Dockerfile-debian.t
 
   * shell → Ansible (might not be as bad)
 
-  * You may need to learn a lot.
+  * You may need to learn new things.
 
   * Some Ansible tasks are more complex.
 
@@ -434,6 +482,13 @@ services:
     user: '{{ DJANGO_USER }}'
     command: ['/usr/bin/dumb-init', '{{ DJANGO_VENV }}/bin/gunicorn', -w, '2', -b, '0.0.0.0:{{ DJANGO_PORT }}', 'project.wsgi:application']
     entrypoint: [/usr/bin/entrypoint.sh]
+```
+
+---
+
+# container.yml (cont.)
+
+```yaml
     dev_overrides:
       volumes:
       - '$PWD:{{ DJANGO_ROOT }}'
@@ -450,7 +505,10 @@ services:
 ---
 
 # Thank you!
-## Questions?
+
+* <span class="fa fa-github-square"></span> [ansible/ansible-container](https://github.com/ansible/ansible-container)
+* `#ansible-container` channel on [irc.freenode.net](https://freenode.net/)
+* [https://groups.google.com/forum/#!forum/ansible-container](https://groups.google.com/forum/#!forum/ansible-container)
 
     </textarea>
     <script src="remark-latest.min.js">
