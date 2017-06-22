@@ -41,7 +41,7 @@ class: center, middle
 
 ---
 
-# /me
+# /whois
 ## Tomáš Tomeček
 
 --
@@ -110,6 +110,14 @@ class: center, middle
   * Developers want to iterate quickly.
 
   * Production environment needs to be rock-solid.
+
+--
+
+  * BTW, we also need staging environment.
+
+???
+
+* Are these requirements sane?
 
 ---
 
@@ -217,7 +225,7 @@ web:
 
 ---
 
-# sample Compose file (cont.)
+# Sample Compose file (cont.)
 
 ```yaml
 db:
@@ -340,10 +348,15 @@ Source: https://github.com/docker-library/golang/blob/master/Dockerfile-debian.t
 
   * shell → Ansible (might not be as bad)
 
-  * You may need to learn new things.
+  * You may need to learn new things. (is this actually bad?)
 
   * Some Ansible tasks are more complex.
 
+???
+
+* Dockerfile - new DSL
+* Compose file - new format, specific to a single platform
+
 ---
 
 # COPY vs copy module
@@ -366,7 +379,7 @@ vs.
 
 ```dockerfile
 COPY file /path/inside/image
-RUN chmod 0644 /path/inside/image && chown app /path/inside/image
+*RUN chmod 0644 /path/inside/image && chown app /path/inside/image
 ```
 
 vs.
@@ -376,8 +389,8 @@ vs.
    copy:
      src: file
      dest: /path/inside/image
-     owner: app
-     mode: 0644
+*    owner: app
+*    mode: 0644
 ```
 
 ---
@@ -428,13 +441,25 @@ vs.
 
 * Define how the Ansible role is meant to be used in container environment.
 
+---
+
+# container.yml
+
+* Single definition of the application.
+
+  * Build images.
+
+  * How to run in development.
+
+  * How to deploy to a production cloud environment.
+
 --
 
 * https://github.com/chouseknecht/django-gulp-nginx/blob/master/container.yml
 
-  * Orchestration metadata
+???
 
-  * Configuration for ansible-container
+* also configuration of ansible-container
 
 ---
 
@@ -505,7 +530,36 @@ services:
 
 # Bright future
 
-* TBD
+* Preparation for 1.0:
+
+  * No conductor rebuilds after every `ansible-container build`.
+
+  * Provide pre-built conductor images based on different distributions.
+
+  * Target images based on Python 3.
+
+--
+
+* Establish ansible-container SIG.
+
+--
+
+* Post 1.0:
+
+  * Keep conductor images up to date.
+
+---
+
+class: center, middle
+
+# We need your feedback!
+
+???
+
+* who have already used ansible-container?
+* what's your use case?
+* how complicated your setup is?
+* would you join the sig?
 
 ---
 
@@ -516,6 +570,8 @@ services:
 * `#ansible-container` channel on [irc.freenode.net](https://freenode.net/)
 
 * [https://groups.google.com/forum/#!forum/ansible-container](https://groups.google.com/forum/#!forum/ansible-container)
+
+* <span class="fa fa-github-square"></span> [TomasTomecek/ansiblefest2017-talk](https://github.com/TomasTomecek/ansiblefest2017-talk)
 
     </textarea>
     <script src="remark-latest.min.js">
