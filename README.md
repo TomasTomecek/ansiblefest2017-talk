@@ -1,3 +1,7 @@
+# From Dockerfiles to Ansible Container
+
+[Slides](https://tomastomecek.github.io/ansiblefest2017-talk/#3)
+
 ## Running locally
 
 GitHub uses [jekyll](https://github.com/jekyll/jekyll) to deploy, here's how to do it locally:
